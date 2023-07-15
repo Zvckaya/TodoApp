@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mytodo_list/constants/gaps.dart';
 import 'package:mytodo_list/widget/todo.dart';
@@ -27,7 +28,53 @@ class HomeState extends State<Home> {
     _baseid += 1;
   }
 
-  void FlutterDialog() {
+  void deleteList(int i) {
+    setState(() {
+      myTodo.removeAt(i);
+    });
+  }
+
+  void modifyTodo(int idx) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            title: const Text("할일 수정"),
+            content: Container(
+                height: 170,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextField(
+                        controller: _titleCon =
+                            new TextEditingController(text: myTodo[idx].title),
+                      ),
+                      TextField(
+                        controller: _detailCon =
+                            new TextEditingController(text: myTodo[idx].detail),
+                      ),
+                      Gaps.v16,
+                      CupertinoButton(
+                          color: Theme.of(context).primaryColor,
+                          onPressed: () {
+                            setState(() {
+                              myTodo[idx].title = _titleCon.text;
+                              myTodo[idx].detail = _detailCon.text;
+                            });
+                            _titleCon.clear();
+                            _detailCon.clear();
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("저장"))
+                    ])),
+          );
+        });
+  }
+
+  void flutterdialog() {
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -38,44 +85,41 @@ class HomeState extends State<Home> {
             title: const Text("할일 추가"),
             content: Container(
                 height: 170,
-                child: Column(children: [
-                  TextField(
-                    controller: _titleCon,
-                    decoration: const InputDecoration(hintText: "할일"),
-                  ),
-                  TextField(
-                    controller: _detailCon,
-                    decoration: const InputDecoration(hintText: "설명"),
-                  ),
-                  Gaps.v14,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextButton(
+                      TextField(
+                        controller: _titleCon,
+                        decoration: const InputDecoration(hintText: "할일"),
+                      ),
+                      TextField(
+                        controller: _detailCon,
+                        decoration: const InputDecoration(hintText: "설명"),
+                      ),
+                      Gaps.v16,
+                      CupertinoButton(
+                          color: Theme.of(context).primaryColor,
                           onPressed: () {
-                            ComMkJob(_baseid, _titleCon.text, _detailCon.text);
-                            _titleCon.clear();
-                            _detailCon.clear();
+                            if (_titleCon.text.length != 0 &&
+                                _detailCon.text.length != 0) {
+                              makeTodo(
+                                  _baseid, _titleCon.text, _detailCon.text);
+                              _titleCon.clear();
+                              _detailCon.clear();
+                              print("할일생성");
+                            } else {}
                           },
-                          child: Text("저장")),
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            _titleCon.clear();
-                            _detailCon.clear();
-                          },
-                          child: Text("삭제")),
-                    ],
-                  )
-                ])),
+                          child: Text("저장"))
+                    ])),
           );
         });
   }
 
-  void ComMkJob(int id, String title, String detail) {
+  void makeTodo(int id, String title, String detail) {
     setState(() {
       myTodo.add(Todo(
-        id: id,
+        deletel: deleteList,
+        myid: id,
         title: title,
         detail: detail,
       ));
@@ -99,7 +143,7 @@ class HomeState extends State<Home> {
           child: BuildList(),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: FlutterDialog,
+          onPressed: flutterdialog,
           tooltip: 'Increment',
           child: const Icon(Icons.add),
         ));
@@ -107,17 +151,25 @@ class HomeState extends State<Home> {
 
   Widget? BuildList() {
     if (myTodo.isEmpty) {
-      return const Center(child: Text("할일을 추가해주세요.."));
+      return const Center(
+          child: Text(
+        "할일을 추가해주세요....",
+        style: TextStyle(fontSize: 20),
+      ));
     } else {
       return ListView.separated(
         separatorBuilder: (BuildContext context, int index) {
           return Gaps.v20;
         },
         itemBuilder: (BuildContext context, int idx) {
-          return Todo(
-            id: idx,
-            title: myTodo[idx].title,
-            detail: myTodo[idx].detail,
+          return GestureDetector(
+            onTap: () => modifyTodo(idx),
+            child: Todo(
+              deletel: deleteList,
+              myid: idx,
+              title: myTodo[idx].title,
+              detail: myTodo[idx].detail,
+            ),
           );
         },
         itemCount: myTodo.length,

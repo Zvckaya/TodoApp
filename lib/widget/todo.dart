@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mytodo_list/screen/home_screen.dart';
 
 class Todo extends StatefulWidget {
-  Todo({
-    super.key,
-    required this.id,
-    required this.title,
-    required this.detail,
-  });
-  int id;
+  final Function(int) deletel;
+  Todo(
+      {super.key,
+      required this.myid,
+      required this.title,
+      required this.detail,
+      required this.deletel});
+  int myid;
   String title;
   String detail;
 
@@ -67,10 +68,9 @@ class _TodoState extends State<Todo> {
           ),
           IconButton(
               onPressed: () {
-                setState(() {
-                  home?.myTodo.removeAt(widget.id);
-                  print("삭제");
-                });
+                if (check == true) {
+                  widget.deletel(widget.myid);
+                } else {}
               },
               icon: const Icon(
                 Icons.delete_forever,
